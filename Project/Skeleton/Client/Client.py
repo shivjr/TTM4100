@@ -29,18 +29,7 @@ class Client:
         ########
     def receive_message(self, message):
         # TODO: Handle incoming message
-        recievedMessage = json.loads(message)
-        if  recievedMessage.get('error') != None:
-            print (recievedMessage.get('error'))
-        elif recievedMessage.get('request') == 'login':
-            print ('Welcome ' + recievedMessage.get('username') +'!')
-        elif recievedMessage.get('request') == 'logout':
-            print ('See you soon!')
-        elif recievedMessage.get('request') == 'message':
-            print('Your message is: ' + recievedMessage.get('message'))
-        elif recievedMessage.get('request') == 'help':
-            print('THIS NEEDS TO BE DONE. (func: recieve_message file: Client.py)')
-        ###############################3
+        pass
 
     def send_payload(self, data):
         # TODO: Handle sending of a payload
