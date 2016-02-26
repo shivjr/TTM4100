@@ -10,7 +10,7 @@ class Client:
 
     def __init__(self, host, server_port):
         """
-        This method is run when creating a new Client object
+        This method is run when creating a new Client object 
         """
 
         # Set up the socket connection to the server
@@ -36,6 +36,11 @@ class Client:
         
         pass
         
+
+    #birathepan
+    def start():
+    #initiate communication to messagereciever
+
     # More methods may be needed!
 
 
