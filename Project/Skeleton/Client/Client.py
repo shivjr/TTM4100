@@ -17,6 +17,8 @@ class Client:
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         # TODO: Finish init process with necessary code
+        self.host = host
+        self.server_port = server_port
         self.run()
 
     def run(self):
@@ -33,6 +35,9 @@ class Client:
 
     def send_payload(self, data):
         # TODO: Handle sending of a payload
+        asd = "{'request':<msg>, 'content'<" + data+ ">}"
+        print asd
+        self.connection.sendto(data,(self.host, self.server_port))
         
         pass
         
@@ -52,3 +57,13 @@ if __name__ == '__main__':
     No alterations are necessary
     """
     client = Client('localhost', 9998)
+
+    while True:
+        x = raw_input("Enter command:")
+        print x[:3]
+        if x == "logout":
+            client.disconnect()
+        elif x[:3] == "msg":
+            client.send_payload((x[4:]))
+        else:
+            print "qwerty"
