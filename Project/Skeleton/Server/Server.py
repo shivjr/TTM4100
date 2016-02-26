@@ -6,6 +6,11 @@ Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
 
+"""
+regex for å sjekke om det er A-z,a-z,0-9:
+^[A-Za-z0-9_.]+$
+"""
+
 class ClientHandler(SocketServer.BaseRequestHandler):
     """
     This is the ClientHandler class. Everytime a new client connects to the
