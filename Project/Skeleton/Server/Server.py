@@ -25,15 +25,27 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     def pretty_print(self, message, username, timestamp):
         return username + ' said @ ' + timestamp + ": " + message
     #Shiv
+    def pretty_get_clientsConnected(self):
+        usernames = self.server.clients.values()
+        content = ''
+        if len(usernames) == 0:
+            content += '\t' + '#The chat is Empty...'   
+        else:
+            for username in usernames:
+                content += '\t' + username + '\n'
+        return content
+    #Shiv
     def printConnection(self, port, ip):
         print ('Client connected @' + ip +':' + str(port))
     #Shiv
     def handle_login(self, message):
-        username = message['username'];
+        username = message['content'];
         #if not re.match('w+\^$', username):
         #    data = {'response': 'error', 'content': 'Invalid username', 'username':username}
         if username in self.server.clients.values():
             data = {'response': 'error', 'content': 'Username taken', 'username':username}
+        elif self.connection in self.server.clients.keys():
+            data = {'response': 'error', 'content': 'You are already connected. Please log off before trying to login with another username!'}
         else:
             self.server.clients[self.connection] = username
             data = {'response': 'info', 'content': 'Login successful', 'username':username}
@@ -45,7 +57,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             data = {'response': 'info', 'content': 'Logout successful', 'username':username}
             del self.server.clients[self.connection]
         else:
-            data = {'response': 'error', 'content': 'Not logged in'}
+            data = {'response': 'error', 'content': 'You have to login before you can logout'}
         self.connection.sendall(json.dumps(data))
     #Shiv
     def handle_msg(self, message):
@@ -56,14 +68,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             self.server.messages.append(msg)
             data = {'response': 'message', 'content': msg}
         else:
-            data = {'response': 'error', 'content': 'Not logged in'}
+            data = {'response': 'error', 'content': 'You cant send a message before login...'}
         self.connection.sendall(json.dumps(data))
     def handle_names(self):
-        pass
+        names = self.pretty_get_clientsConnected()
+        data = {'response': 'info', 'content': 'The names connected to the chat are: \n' + names}
+        self.connection.sendall(json.dumps(data))
     def handle_help(self):
-        pass
+        data = {'response': 'info', 'content': 'The possible responses are: \n \t "login:<username>" \n \t "logout:<None>" \n \t "msg:<message>" \n \t "help:<None>" \n \t "names:<none>"'}
+        self.connection.sendall(json.dumps(data))
     def handle_invalid_request(self):
-        self.connection.send(json.dumps({'response': 'error', 'content': 'Invalid request'}))
+        self.connection.send(json.dumps({'response': 'error', 'content': 'That is an invalid request. Type help to get possible requests'}))
     def handle(self):
         """
         This method handles the connection between a client and the server.

@@ -45,9 +45,9 @@ class Client:
     def receive_message(self, message):
         #Decode message
         msg_parser = MessageParser()
-        print(message)
-        if message is None:
-            print('oops its none')
+        #print(message)
+        #if message is None:
+         #   print('oops its none')
         decoded_message = msg_parser.parse(message)
         #Print the "handled" response
         print(decoded_message)
@@ -58,7 +58,7 @@ class Client:
                 username=data.split()[1]
             except IndexError:
                 username=''
-            payload = {'request': 'login', 'username': username}
+            payload = {'request': 'login', 'content': username}
         elif(data.startswith('logout')):
             payload = {'request': 'logout', 'None': None}
         elif(data.startswith('msg')):
