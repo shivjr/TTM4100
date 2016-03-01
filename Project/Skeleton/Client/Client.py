@@ -15,38 +15,57 @@ class Client:
 
         # Set up the socket connection to the server
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        # TODO: Finish init process with necessary code
+        ############## QT #################
         self.host = host
         self.server_port = server_port
         self.run()
+        ###################################
 
+    #Shiv
     def run(self):
-        # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
-        
+        self.thread = ReceiveMessageWorker(client, self.connection)
+        self.thread.deamon=True
+        self.thread.run()
+
+    #Shiv
     def disconnect(self):
-        # TODO: Handle disconnection
+        self.thread.stop = True
         self.connection.close()
-        ########
+
+    #Shiv     #LOOK INTO THIS
+        #ARE WE SUPPOSED TO SOLVE HERE OR IN MESSAGEPARSER
     def receive_message(self, message):
-        # TODO: Handle incoming message
+        #Decode message
+        msg_parser = MessageParser()
+        decoded_message = msg_parser.parse(message)
+        #Handle of the response, a.k.a decoded_message
+        if(decoded_message['response'] == 'info'):
+            print(msg_parser.parse_info(decoded_message))
+        #elif(decoded_message['response'] == 'info'):
+         #   print(' in Client.py: \t' + decoded_message['error'])
         pass
 
+    #Shiv
     def send_payload(self, data):
-        # TODO: Handle sending of a payload
-        asd = "{'request':<msg>, 'content'<" + data+ ">}"
-        print asd
-        self.connection.sendto(data,(self.host, self.server_port))
-        
-        pass
-        
+        if(data.startswith('login')):
+            try:
+                username=data.split()[1]
+            except IndexError:
+                username=''
+            payload = {'request': 'login', 'username': username}
+        elif(data,startswith('logout')):
+            payload = {'request': 'logout', 'None': None}
+        elif(data,startswith('msg')):
+            payload = {'request': 'msg', 'message': data.split(' ',1)[1]}
+        elif(data,startswith('names')):
+            payload = {'request': 'names', 'None': None}
+        elif(data,startswith('help')):
+            payload = {'request': 'help', 'None': None}
+        else:
+            print('send_payload() in Client.py: \t INVALID REQUEST')
+        self.connection.sendall(json.dumps(data))
 
-    #birathepan
-    def start():
-    #initiate communication to messagereciever
-
-    # More methods may be needed!
 
 
 if __name__ == '__main__':
@@ -57,13 +76,11 @@ if __name__ == '__main__':
     No alterations are necessary
     """
     client = Client('localhost', 9998)
-
+    
     while True:
-        x = raw_input("Enter command:")
-        print x[:3]
-        if x == "logout":
-            client.disconnect()
-        elif x[:3] == "msg":
-            client.send_payload((x[4:]))
-        else:
-            print "qwerty"
+        input_= raw_input('>> ')
+        client.send_payload(input_)
+
+        if  input_== 'quit':
+            break
+    client.disconnect()
