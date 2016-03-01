@@ -2,7 +2,7 @@
 import socket
 from MessageReceiver import MessageReceiver
 from MessageParser import MessageParser
-
+import json
 class Client:
     """
     This is the chat client class
@@ -24,28 +24,33 @@ class Client:
     #Shiv
     def run(self):
         self.connection.connect((self.host, self.server_port))
-        self.thread = ReceiveMessageWorker(client, self.connection)
+        self.thread = MessageReceiver(self, self.connection)
         self.thread.deamon=True
-        self.thread.run()
+        self.thread.start()
+        while True:
+            input_= raw_input('>> ')
+            self.send_payload(input_)
+
+            if  input_== 'quit':
+                break
+        self.disconnect()
+        
 
     #Shiv
     def disconnect(self):
         self.thread.stop = True
         self.connection.close()
 
-    #Shiv     #LOOK INTO THIS
-        #ARE WE SUPPOSED TO SOLVE HERE OR IN MESSAGEPARSER
+    #Shiv 
     def receive_message(self, message):
         #Decode message
         msg_parser = MessageParser()
+        print(message)
+        if message is None:
+            print('oops its none')
         decoded_message = msg_parser.parse(message)
-        #Handle of the response, a.k.a decoded_message
-        if(decoded_message['response'] == 'info'):
-            print(msg_parser.parse_info(decoded_message))
-        #elif(decoded_message['response'] == 'info'):
-         #   print(' in Client.py: \t' + decoded_message['error'])
-        pass
-
+        #Print the "handled" response
+        print(decoded_message)
     #Shiv
     def send_payload(self, data):
         if(data.startswith('login')):
@@ -54,17 +59,17 @@ class Client:
             except IndexError:
                 username=''
             payload = {'request': 'login', 'username': username}
-        elif(data,startswith('logout')):
+        elif(data.startswith('logout')):
             payload = {'request': 'logout', 'None': None}
-        elif(data,startswith('msg')):
-            payload = {'request': 'msg', 'message': data.split(' ',1)[1]}
-        elif(data,startswith('names')):
+        elif(data.startswith('msg')):
+            payload = {'request': 'msg', 'content': data.split(' ',1)[1]}
+        elif(data.startswith('names')):
             payload = {'request': 'names', 'None': None}
-        elif(data,startswith('help')):
+        elif(data.startswith('help')):
             payload = {'request': 'help', 'None': None}
         else:
-            print('send_payload() in Client.py: \t INVALID REQUEST')
-        self.connection.sendall(json.dumps(data))
+            payload = {'request': '', 'None': None}
+        self.connection.sendall(json.dumps(payload))
 
 
 
@@ -75,12 +80,6 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('localhost', 9998)
+    client = Client('localhost', 9996)
     
-    while True:
-        input_= raw_input('>> ')
-        client.send_payload(input_)
 
-        if  input_== 'quit':
-            break
-    client.disconnect()

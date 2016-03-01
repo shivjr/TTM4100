@@ -1,4 +1,4 @@
-
+import json
 
 class MessageParser():
     def __init__(self):
@@ -17,20 +17,20 @@ class MessageParser():
         payload = json.loads(json_object)
         ################################
 
-        #if payload['response'] in self.possible_responses:
-        return self.possible_responses[payload['response']](payload)
-        #else:
+        if payload['response'] in self.possible_responses:
+            return self.possible_responses[payload['response']](payload)
+        else:
             # Response not valid
-        pass
+            return ('Her ender vi')
     ################### TODO ################
     def parse_error(self, payload):
-        pass
+        return ('Content: \t'+payload['content'])
     def parse_message(self, payload):
-        pass
+        return ('Content: \t'+payload['content'])
     def parse_history(self, payload):
         pass
     #########################################
     def parse_info(self, payload):
-        message = 'Response: Info \t Content: '+ payload[info]
+        message = ('Content: \t'+payload['content'])
         return message
   

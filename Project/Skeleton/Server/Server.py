@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import SocketServer
 import re #regex class, used to check if username is valid
+import json
 import time
 import datetime
 """
@@ -25,13 +26,13 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         return username + ' said @ ' + timestamp + ": " + message
     #Shiv
     def printConnection(self, port, ip):
-        print ('Client connected @' + ip +':'m + str(port))
+        print ('Client connected @' + ip +':' + str(port))
     #Shiv
     def handle_login(self, message):
         username = message['username'];
-        if not re.match('w+\^$', username):
-            data = {'response': 'error', 'content': 'Invalid username', 'username':username}
-        elif username in self.server.clientsvalues():
+        #if not re.match('w+\^$', username):
+        #    data = {'response': 'error', 'content': 'Invalid username', 'username':username}
+        if username in self.server.clients.values():
             data = {'response': 'error', 'content': 'Username taken', 'username':username}
         else:
             self.server.clients[self.connection] = username
@@ -39,7 +40,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.connection.sendall(json.dumps(data))
     #Shiv
     def handle_logout(self):
-        if self.connection in self.server.clients:
+        if self.connection in self.server.clients.keys():
             username = self.server.clients[self.connection]
             data = {'response': 'info', 'content': 'Logout successful', 'username':username}
             del self.server.clients[self.connection]
@@ -48,19 +49,21 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.connection.sendall(json.dumps(data))
     #Shiv
     def handle_msg(self, message):
-        if self.connection in self.server.clients:
+        if self.connection in self.server.clients.keys():
             username = self.server.clients[self.connection]
             st = datetime.datetime.fromtimestamp(time.time()).strftime('%d.%m.%Y %H:%M:%S')
-            msg = self.pretty_print(message['msg'], username, st)
+            msg = self.pretty_print(message['content'], username, st)
             self.server.messages.append(msg)
             data = {'response': 'message', 'content': msg}
         else:
             data = {'response': 'error', 'content': 'Not logged in'}
         self.connection.sendall(json.dumps(data))
-    def handle_names:
+    def handle_names(self):
         pass
-    def handle_help:
+    def handle_help(self):
         pass
+    def handle_invalid_request(self):
+        self.connection.send(json.dumps({'response': 'error', 'content': 'Invalid request'}))
     def handle(self):
         """
         This method handles the connection between a client and the server.
@@ -79,15 +82,16 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 if(request == 'login'):
                     self.handle_login(message)
                 elif(request == 'logout'):
-                    self.handle_logout(message)
+                    self.handle_logout()
                 elif(request == 'msg'):
                     self.handle_msg(message)
                 elif(request == 'names'):
-                    self.handle_names(message)
+                    self.handle_names()
                 elif(request == 'help'):
-                    self.handle_help(message)
-                #else:
-                 #   break
+                    self.handle_help()
+                else:
+                    self.handle_invalid_request()
+                 
         #####################################################
         
     
@@ -101,7 +105,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     allow_reuse_address = True
     ######### Shiv ###########
     messages = []
-    clients = []
+    clients = {}
     ##########################
 if __name__ == "__main__":
     """
@@ -110,7 +114,7 @@ if __name__ == "__main__":
 
     No alterations are necessary
     """
-    HOST, PORT = 'localhost', 9998
+    HOST, PORT = 'localhost', 9996
     print 'Server running...'
 
     # Set up and initiate the TCP server
