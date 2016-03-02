@@ -25,6 +25,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     def pretty_print(self, message, username, timestamp):
         return username + ' said @ ' + timestamp + ": " + message
     #Shiv
+    def broadcast(self, data):
+        for client in self.server.clients:
+            client.send(json.dumps(data))
     def pretty_get_clientsConnected(self):
         usernames = self.server.clients.values()
         content = ''
@@ -56,7 +59,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         else:
             self.server.clients[self.connection] = username
             data = {'response': 'info', 'content': 'Login successful', 'username':username}
-            self.handle_send_history_when_login()
+            #self.handle_send_history_when_login()
         self.connection.sendall(json.dumps(data))
     #Shiv
     def handle_logout(self):
@@ -77,13 +80,13 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             data = {'response': 'message', 'content': msg}
         else:
             data = {'response': 'error', 'content': 'You cant send a message before login...'}
-        self.connection.sendall(json.dumps(data))
+        self.broadcast(data)
     def handle_names(self):
         names = self.pretty_get_clientsConnected()
         data = {'response': 'info', 'content': 'The names connected to the chat are: \n' + names}
         self.connection.sendall(json.dumps(data))
     def handle_help(self):
-        data = {'response': 'info', 'content': 'The possible responses are: \n \t "login:<username>" \n \t "logout:<None>" \n \t "msg:<message>" \n \t "help:<None>" \n \t "names:<none>"'}
+        data = {'response': 'info', 'content': 'The possible requests are: \n \t "login:<username>" \n \t "logout:<None>" \n \t "msg:<message>" \n \t "help:<None>" \n \t "names:<none>"'}
         self.connection.sendall(json.dumps(data))
     def handle_invalid_request(self):
         self.connection.send(json.dumps({'response': 'error', 'content': 'That is an invalid request. Type help to get possible requests'}))
@@ -129,6 +132,8 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     ######### Shiv ###########
     messages = []
     clients = {}
+            
+        
     ##########################
 if __name__ == "__main__":
     """
