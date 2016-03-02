@@ -25,7 +25,7 @@ class Client:
     def run(self):
         self.connection.connect((self.host, self.server_port))
         self.thread = MessageReceiver(self, self.connection)
-        self.thread.deamon=True
+        self.thread.daemon=True
         self.thread.start()
         while True:
             input_= raw_input('>> ')
@@ -60,15 +60,23 @@ class Client:
                 username=''
             payload = {'request': 'login', 'content': username}
         elif(data.startswith('logout')):
-            payload = {'request': 'logout', 'None': None}
+            payload = {'request': 'logout', 'content': None}
         elif(data.startswith('msg')):
-            payload = {'request': 'msg', 'content': data.split(' ',1)[1]}
+            data = data.split()
+            dummy = data.pop(0)
+            content = ''
+            if not data:
+                payload = {'request': 'msg', 'content': ''}
+            else:
+                for element in data:
+                    content += element +' ' 
+                payload = {'request': 'msg', 'content': content}
         elif(data.startswith('names')):
-            payload = {'request': 'names', 'None': None}
+            payload = {'request': 'names', 'content': None}
         elif(data.startswith('help')):
-            payload = {'request': 'help', 'None': None}
+            payload = {'request': 'help', 'content': None}
         else:
-            payload = {'request': '', 'None': None}
+            payload = {'request': '', 'content': None}
         self.connection.sendall(json.dumps(payload))
 
 

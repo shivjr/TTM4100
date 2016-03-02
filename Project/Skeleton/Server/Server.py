@@ -38,6 +38,13 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     def printConnection(self, port, ip):
         print ('Client connected @' + ip +':' + str(port))
     #Shiv
+    def handle_send_history_when_login(self):
+        history = ''
+        for message in self.server.messages:
+            history += '\n' + messsage
+        data = {'response': 'history', 'content': 'The history in the chat up til now is:' + history}
+        self.connection.send(json.dumps(data))
+    #Shiv
     def handle_login(self, message):
         username = message['content'];
         #if not re.match('w+\^$', username):
@@ -49,6 +56,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         else:
             self.server.clients[self.connection] = username
             data = {'response': 'info', 'content': 'Login successful', 'username':username}
+            self.handle_send_history_when_login()
         self.connection.sendall(json.dumps(data))
     #Shiv
     def handle_logout(self):

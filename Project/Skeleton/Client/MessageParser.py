@@ -28,7 +28,7 @@ class MessageParser():
     def parse_message(self, payload):
         return ('Content: \t'+payload['content'])
     def parse_history(self, payload):
-        pass
+        return ('Content: \t'+payload['content'])
     #########################################
     def parse_info(self, payload):
         message = ('Content: \t'+payload['content'])
