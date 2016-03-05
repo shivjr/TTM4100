@@ -57,7 +57,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         #    data = {'response': 'error', 'content': 'Invalid username', 'username':username}
         checkValidUsername=re.compile('^[A-Za-z0-9_.]*$') #B
          if not checkValidUsername.match(username): #B
-            self.send_server_message('Error, not allowed username') #B
+            self.send_server_message('Error, not allowed username') #Finne egen send_server_message B
         if username in self.server.clients.values():
             data = {'response': 'error', 'content': 'Username taken', 'username':username}
         elif self.connection in self.server.clients.keys():
