@@ -37,6 +37,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             for username in usernames:
                 content += '\t' + username + '\n'
         return content
+    #B    
+    def logg(self):
+        return self.server.messages
     #Shiv
     def printConnection(self, port, ip):
         print ('Client connected @' + ip +':' + str(port))
@@ -52,6 +55,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         username = message['content'];
         #if not re.match('w+\^$', username):
         #    data = {'response': 'error', 'content': 'Invalid username', 'username':username}
+        checkValidUsername=re.compile('^[A-Za-z0-9_.]*$') #B
+         if not checkValidUsername.match(username): #B
+            self.send_server_message('Error, not allowed username') #B
         if username in self.server.clients.values():
             data = {'response': 'error', 'content': 'Username taken', 'username':username}
         elif self.connection in self.server.clients.keys():
