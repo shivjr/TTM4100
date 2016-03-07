@@ -75,6 +75,8 @@ class Client:
             payload = {'request': 'names', 'content': None}
         elif(data.startswith('help')):
             payload = {'request': 'help', 'content': None}
+        elif(data.startswith('history')):
+            payload = {'request': 'history', 'content':None}
         else:
             payload = {'request': '', 'content': None}
         self.connection.sendall(json.dumps(payload))

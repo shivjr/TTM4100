@@ -21,10 +21,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     only connected clients, and not the server itself. If you want to write
     logic for the server, you must write it outside this class
     """
-    #Shiv
     def pretty_print(self, message, username, timestamp):
         return username + ' said @ ' + timestamp + ": " + message
-    #Shiv
     def broadcast(self, data):
         for client in self.server.clients:
             client.send(json.dumps(data))
@@ -37,37 +35,28 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             for username in usernames:
                 content += '\t' + username + '\n'
         return content
-    #B    
-    def logg(self):
-        return self.server.messages
-    #Shiv
     def printConnection(self, port, ip):
         print ('Client connected @' + ip +':' + str(port))
-    #Shiv
     def handle_send_history_when_login(self):
-        history = ''
-        for message in self.server.messages:
-            history += '\n' + messsage
-        data = {'response': 'history', 'content': 'The history in the chat up til now is:' + history}
+        #history = ''
+        #for message in self.server.messages:
+        #    history += '\n' + messsage
+        data = {'response': 'history', 'content': self.server.messages}#'The history in the chat up til now is:' + history}
         self.connection.send(json.dumps(data))
-    #Shiv
     def handle_login(self, message):
         username = message['content'];
-        #if not re.match('w+\^$', username):
-        #    data = {'response': 'error', 'content': 'Invalid username', 'username':username}
-        checkValidUsername=re.compile('^[A-Za-z0-9_.]*$') #B
-         if not checkValidUsername.match(username): #B
-            self.send_server_message('Error, not allowed username') #Finne egen send_server_message B
-        if username in self.server.clients.values():
+        checkValidUsername=re.compile('^[A-Za-z0-9_.]*$') 
+        if not checkValidUsername.match(username): 
+            data = {'response': 'error', 'content': 'Invalid username', 'username':username}
+        elif username in self.server.clients.values():
             data = {'response': 'error', 'content': 'Username taken', 'username':username}
         elif self.connection in self.server.clients.keys():
             data = {'response': 'error', 'content': 'You are already connected. Please log off before trying to login with another username!'}
         else:
             self.server.clients[self.connection] = username
             data = {'response': 'info', 'content': 'Login successful', 'username':username}
-            #self.handle_send_history_when_login()
+            self.handle_send_history_when_login()
         self.connection.sendall(json.dumps(data))
-    #Shiv
     def handle_logout(self):
         if self.connection in self.server.clients.keys():
             username = self.server.clients[self.connection]
@@ -76,7 +65,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         else:
             data = {'response': 'error', 'content': 'You have to login before you can logout'}
         self.connection.sendall(json.dumps(data))
-    #Shiv
     def handle_msg(self, message):
         if self.connection in self.server.clients.keys():
             username = self.server.clients[self.connection]
@@ -96,6 +84,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.connection.sendall(json.dumps(data))
     def handle_invalid_request(self):
         self.connection.send(json.dumps({'response': 'error', 'content': 'That is an invalid request. Type help to get possible requests'}))
+    def handle_history(self):
+        print('\n')
+        print(self.server.messages)
+        print(self.server.clients)
+        print('\n')
     def handle(self):
         """
         This method handles the connection between a client and the server.
@@ -103,9 +96,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
-        ############## Shiv ##############################
         self.printConnection(self.port, self.ip)
-        # Loop that listens for messages from the client
         while True:
             data = self.connection.recv(2048).strip()
             if data:
@@ -121,10 +112,10 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     self.handle_names()
                 elif(request == 'help'):
                     self.handle_help()
+                elif(request == 'history'):
+                    self.handle_history()
                 else:
                     self.handle_invalid_request()
-                 
-        #####################################################
         
     
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -135,12 +126,9 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     No alterations are necessary
     """
     allow_reuse_address = True
-    ######### Shiv ###########
     messages = []
     clients = {}
             
-        
-    ##########################
 if __name__ == "__main__":
     """
     This is the main method and is executed when you type "python Server.py"
@@ -151,6 +139,5 @@ if __name__ == "__main__":
     HOST, PORT = 'localhost', 9996
     print 'Server running...'
 
-    # Set up and initiate the TCP server
     server = ThreadedTCPServer((HOST, PORT), ClientHandler)
     server.serve_forever()
